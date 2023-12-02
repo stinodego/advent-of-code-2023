@@ -3,21 +3,16 @@ use std::io::{self, BufRead};
 use std::path::Path;
 
 static PATH: &str = "data/input.txt";
-static MAX_RED: u32 = 12;
-static MAX_GREEN: u32 = 13;
-static MAX_BLUE: u32 = 14;
 
 fn main() -> Result<(), io::Error> {
     let lines = read_lines(PATH)?;
 
-    let result: u32 = lines.filter_map(|l| id_if_possible(l.unwrap())).sum();
-    println!("\n{}", result);
+    let result: u32 = lines.map(|x| power(x.unwrap())).sum();
+    println!("{result}");
 
     Ok(())
 }
 
-// The output is wrapped in a Result to allow matching on errors
-// Returns an Iterator to the Reader of the lines of the file.
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,
@@ -26,26 +21,12 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn id_if_possible(s: String) -> Option<u32> {
-    let mut split = s.split(": ");
-    let id_string = split.next().unwrap();
-    let game_string = split.next().unwrap();
-
-    let id = parse_id(id_string);
+fn power(s: String) -> u32 {
+    let game_string = s.split(": ").nth(1).unwrap();
     let game = parse_game(game_string);
-    let possible = determine_game_possibility(game);
-
-    if possible {
-        Some(id)
-    } else {
-        None
-    }
+    determine_game_power(game)
 }
 
-/// Parse the game ID from the game ID string
-fn parse_id(s: &str) -> u32 {
-    s.split_whitespace().nth(1).unwrap().parse().unwrap()
-}
 fn parse_game(s: &str) -> impl Iterator<Item = impl Iterator<Item = (u32, &str)>> {
     s.split(';').map(parse_showing)
 }
@@ -59,23 +40,24 @@ fn parse_color(s: &str) -> (u32, &str) {
     (n, color)
 }
 
-fn determine_game_possibility<'a>(
-    mut game: impl Iterator<Item = impl Iterator<Item = (u32, &'a str)>>,
-) -> bool {
-    game.all(determine_showing_possibility)
-}
-fn determine_showing_possibility<'a>(mut showing: impl Iterator<Item = (u32, &'a str)>) -> bool {
-    showing.all(determine_color_possibility)
-}
-fn determine_color_possibility(color: (u32, &str)) -> bool {
-    let n = color.0;
-    let color = color.1;
+fn determine_game_power<'a>(
+    game: impl Iterator<Item = impl Iterator<Item = (u32, &'a str)>>,
+) -> u32 {
+    let mut red = 0;
+    let mut green = 0;
+    let mut blue = 0;
 
-    let max = match color {
-        "red" => MAX_RED,
-        "green" => MAX_GREEN,
-        "blue" => MAX_BLUE,
-        _ => unreachable!(),
-    };
-    n <= max
+    for showing in game {
+        for color in showing {
+            let n = color.0;
+            let color = color.1;
+            match color {
+                "red" => red = std::cmp::max(red, n),
+                "green" => green = std::cmp::max(green, n),
+                "blue" => blue = std::cmp::max(blue, n),
+                _ => unreachable!(),
+            };
+        }
+    }
+    red * green * blue
 }
