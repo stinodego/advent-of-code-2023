@@ -4,21 +4,18 @@ use std::path::Path;
 
 static PATH: &str = "data/input.txt";
 
-fn main() -> Result<(), io::Error> {
-    let lines = read_lines(PATH)?;
-
-    let result: u32 = lines.map(|x| power(x.unwrap())).sum();
+fn main() {
+    let lines = read_lines(PATH).map(|x| x.unwrap());
+    let result: u32 = lines.map(power).sum();
     println!("{result}");
-
-    Ok(())
 }
 
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+fn read_lines<P>(filename: P) -> io::Lines<io::BufReader<File>>
 where
     P: AsRef<Path>,
 {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
+    let file = File::open(filename).unwrap();
+    io::BufReader::new(file).lines()
 }
 
 fn power(s: String) -> u32 {
