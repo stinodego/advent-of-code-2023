@@ -1,15 +1,16 @@
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
 static PATH: &str = "data/input.txt";
+static MAX_RED: u32 = 12;
+static MAX_GREEN: u32 = 13;
+static MAX_BLUE: u32 = 14;
 
 fn main() -> Result<(), io::Error> {
     let lines = read_lines(PATH)?;
 
-    let result: u32 = lines.map(|l| decode2(l.unwrap())).sum();
+    let result: u32 = lines.filter_map(|l| id_if_possible(l.unwrap())).sum();
     println!("\n{}", result);
 
     Ok(())
@@ -26,24 +27,55 @@ where
 }
 
 fn id_if_possible(s: String) -> Option<u32> {
+    let mut split = s.split(": ");
+    let id_string = split.next().unwrap();
+    let game_string = split.next().unwrap();
 
+    let id = parse_id(id_string);
+    let game = parse_game(game_string);
+    let possible = determine_game_possibility(game);
 
-
-    let first_digit = get_first_digit(s.as_str());
-    let last_digit = get_last_digit(s.as_str());
-
-    let result = digits_to_number(first_digit, last_digit);
-
-    println!("{result}");
-    result
+    if possible {
+        Some(id)
+    } else {
+        None
+    }
 }
 
-/// Get the maximum cubes required for each color (RGB)
-fn parse_game(s: &str) -> (u32, u32, u32) {
-
+/// Parse the game ID from the game ID string
+fn parse_id(s: &str) -> u32 {
+    s.split_whitespace().nth(1).unwrap().parse().unwrap()
+}
+fn parse_game(s: &str) -> impl Iterator<Item = impl Iterator<Item = (u32, &str)>> {
+    s.split(';').map(parse_showing)
+}
+fn parse_showing(s: &str) -> impl Iterator<Item = (u32, &str)> {
+    s.split(',').map(parse_color)
+}
+fn parse_color(s: &str) -> (u32, &str) {
+    let mut split = s.split_whitespace();
+    let n = split.next().unwrap().parse().unwrap();
+    let color = split.next().unwrap();
+    (n, color)
 }
 
-/// Get the cubes shown in a single showing (RGB)
-fn parse_game(s: &str) -> (u32, u32, u32) {
-    
+fn determine_game_possibility<'a>(
+    mut game: impl Iterator<Item = impl Iterator<Item = (u32, &'a str)>>,
+) -> bool {
+    game.all(determine_showing_possibility)
+}
+fn determine_showing_possibility<'a>(mut showing: impl Iterator<Item = (u32, &'a str)>) -> bool {
+    showing.all(determine_color_possibility)
+}
+fn determine_color_possibility(color: (u32, &str)) -> bool {
+    let n = color.0;
+    let color = color.1;
+
+    let max = match color {
+        "red" => MAX_RED,
+        "green" => MAX_GREEN,
+        "blue" => MAX_BLUE,
+        _ => unreachable!(),
+    };
+    n <= max
 }
