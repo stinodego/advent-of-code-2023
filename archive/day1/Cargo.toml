@@ -1,7 +1,0 @@
-[package]
-name = "advent-of-code-2023"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-once_cell = "1.18.0"

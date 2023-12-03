@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-static PATH: &str = "data/input.txt";
+static PATH: &str = "data/day1.txt";
 static DIGITS: Lazy<HashMap<&str, u32>> = Lazy::new(|| {
     HashMap::from([
         ("one", 1),
@@ -22,7 +22,7 @@ static DIGITS: Lazy<HashMap<&str, u32>> = Lazy::new(|| {
 fn main() -> Result<(), io::Error> {
     let lines = read_lines(PATH)?;
 
-    let result: u32 = lines.map(|l| decode2(l.unwrap())).sum();
+    let result: u32 = lines.map(|l| decode(l.unwrap())).sum();
     println!("\n{}", result);
 
     Ok(())
@@ -38,7 +38,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn decode2(s: String) -> u32 {
+fn decode(s: String) -> u32 {
     let first_digit = get_first_digit(s.as_str());
     let last_digit = get_last_digit(s.as_str());
 
@@ -81,34 +81,6 @@ fn get_digit_at_start(s: &str) -> Option<u32> {
     }
     None
 }
-
-// fn decode(s: String) -> u32 {
-//     println!("\n{}", s);
-
-//     let re_digit = Regex::new(r"(one|two|three|four|five|six|seven|eight|nine)").unwrap();
-//     let replacement = |caps: &Captures| DIGITS.get(&caps[0]).unwrap();
-//     let s = re_digit.replace_all(s.as_str(), replacement).to_string();
-
-//     // for (string, digit) in DIGITS.iter() {
-//     //     s = s.replace(string, digit);
-//     // }
-//     println!("{}", s);
-
-//     let first_digit = s.chars().filter_map(|c| c.to_digit(10)).next().unwrap();
-//     let last_digit = s
-//         .chars()
-//         .rev()
-//         .filter_map(|c| c.to_digit(10))
-//         .next()
-//         .unwrap();
-
-//     println!("{first_digit} {last_digit}");
-
-//     let result = digits_to_number(first_digit, last_digit);
-
-//     println!("{result}");
-//     result
-// }
 
 fn digits_to_number(first: u32, last: u32) -> u32 {
     first * 10 + last

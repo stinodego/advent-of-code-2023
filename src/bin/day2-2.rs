@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-static PATH: &str = "data/input.txt";
+static PATH: &str = "data/day2.txt";
 
 fn main() {
     let lines = read_lines(PATH).map(|x| x.unwrap());
